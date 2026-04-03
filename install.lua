@@ -1,5 +1,5 @@
-local USER = "SeuUsuario" -- Mude para o seu user do GitHub
-local REPO = "SeuRepositorio" -- Mude para o nome do repo
+local USER = "EpaxOfc" -- Mude para o seu user do GitHub
+local REPO = "Tunel-CC-Tweaks-program" -- Mude para o nome do repo
 local BRANCH = "main"
 local BASE_URL = "https://raw.githubusercontent.com/"..USER.."/"..REPO.."/"..BRANCH.."/"
 
