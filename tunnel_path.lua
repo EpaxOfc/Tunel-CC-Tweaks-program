@@ -1,74 +1,72 @@
 local PathGen = {}
 
--- Auxiliar: Arredondamento
 local function round(n) return math.floor(n + 0.5) end
 
--- Calcula o caminho em Espiral (para grandes alturas)
-function PathGen.calculateSpiral(startPos, endPos, radius)
+-- Modo 1: Reta/Diagonal
+function PathGen.calculateLinear(startPos, endPos)
     local points = {}
+    local dx = endPos.x - startPos.x
     local dy = endPos.y - startPos.y
-    local heightAbs = math.abs(dy)
-    local angleStep = 0.2 -- Suavidade da curva
-    local currentY = startPos.y
-    local angle = 0
-    
-    -- Precisamos de voltas suficientes para subir 1 por 1
-    for h = 0, heightAbs do
-        for a = 0, (math.pi * 2), angleStep do
-            local x = round(startPos.x + math.cos(angle) * radius)
-            local z = round(startPos.z + math.sin(angle) * radius)
-            table.insert(points, {x=x, y=currentY, z=z})
-            angle = angle + angleStep
-        end
-        currentY = currentY + (dy > 0 and 1 or -1)
+    local dz = endPos.z - startPos.z
+    local steps = math.max(math.abs(dx), math.max(math.abs(dy), math.abs(dz)))
+
+    for i = 0, steps do
+        table.insert(points, {
+            x = round(startPos.x + (dx * i / steps)),
+            y = round(startPos.y + (dy * i / steps)),
+            z = round(startPos.z + (dz * i / steps))
+        })
     end
     return points
 end
 
--- Calcula caminho com Curva de 90 graus (L-Shape)
+-- Modo 2: 90 Graus
 function PathGen.calculate90Degree(startPos, endPos)
     local points = {}
-    -- Ponto de Pivô (Esquina)
     local pivot = {x = endPos.x, y = startPos.y, z = startPos.z}
     
-    -- Caminha no X
+    -- Trecho X
     local stepX = startPos.x < pivot.x and 1 or -1
     for x = startPos.x, pivot.x, stepX do
         table.insert(points, {x=x, y=startPos.y, z=startPos.z})
     end
-    
-    -- Caminha no Z (e gerencia o Y gradualmente aqui)
-    local stepZ = pivot.z < endPos.z and 1 or -1
+    -- Trecho Z (com subida gradual de Y)
+    local stepZ = startPos.z < endPos.z and 1 or -1
+    local dz = math.abs(endPos.z - startPos.z)
     local dy = endPos.y - startPos.y
-    local totalStepsZ = math.abs(endPos.z - pivot.z)
-    local currentStepZ = 0
     
-    for z = pivot.z, endPos.z, stepZ do
-        currentStepZ = currentStepZ + 1
-        -- Calcula o Y para subir apenas 1 por 1
-        local progressY = round((currentStepZ / totalStepsZ) * dy)
-        table.insert(points, {x=pivot.x, y=startPos.y + progressY, z=z})
+    for i = 1, dz do
+        local currentZ = startPos.z + (i * stepZ)
+        local currentY = round(startPos.y + (i / dz * dy))
+        table.insert(points, {x=endPos.x, y=currentY, z=currentZ})
     end
-    
     return points
 end
 
+-- Função que o Master e a Turtle chamam
 function PathGen.calculate(config)
-    local distH = math.sqrt((config.endPos.x - config.startPos.x)^2 + (config.endPos.z - config.startPos.z)^2)
-    local distV = math.abs(config.endPos.y - config.startPos.y)
-
-    -- Se a altura for muito grande para a distância, faz espiral
-    if distV > distH then
-        return PathGen.calculateSpiral(config.startPos, config.endPos, config.spiralRadius or 5)
-    end
-
-    -- Se o usuário quer 90 graus
     if config.curveMode == "90" then
         return PathGen.calculate90Degree(config.startPos, config.endPos)
+    else
+        return PathGen.calculateLinear(config.startPos, config.endPos)
     end
+end
 
-    -- Caso contrário, faz o linear simples (diagonal)
-    -- (Mantido do código anterior para compatibilidade)
+-- Divisão de colunas verticais
+function PathGen.getBlocksForTurtle(myID, total, centerLine, w, h)
+    local myBlocks = {}
+    local halfW = math.floor(w/2)
+    for _, p in ipairs(centerLine) do
+        for xOff = -halfW, halfW do
+            -- Distribui colunas entre as turtles
+            if (xOff + halfW) % total == (myID - 1) then
+                for yOff = 0, h - 1 do
+                    table.insert(myBlocks, {x=p.x, y=p.y + yOff, z=p.z, off=xOff})
+                end
+            end
+        end
+    end
+    return myBlocks
 end
 
 return PathGen
