@@ -1,0 +1,21 @@
+# 🏗️ Tunnel Master V2
+Sistema avançado de construção de túneis para **ComputerCraft / CC:Tweaked**.
+
+## ✨ Funcionalidades
+- 📐 **Curvas de 90 graus:** Túneis que respeitam os eixos, sem diagonais apertadas.
+- 🌀 **Subida em Espiral:** Se precisar subir ou descer muito, ele cria uma escada caracol automática.
+- 🧱 **Trabalho Vertical:** Divisão de tarefas por colunas, evitando que as Turtles batam uma na outra.
+- 🖥️ **Monitor em Tempo Real:** Acompanhe o progresso em um monitor colorido na base.
+- 📡 **Sincronização Wireless:** Configure no PC e envie as ordens para todas as Turtles via rádio.
+
+## 🚀 Como Instalar
+Com um **Modem Wireless** conectado ao computador ou Turtle, execute:
+wget https://pastebin.com/raw/U0dK46pR tunel
+
+Depois execute:
+install
+
+🛠️ Requisitos
+4 Computadores com GPS (para localização precisa).
+Wireless Modems em todos os dispositivos.
+Turtles com Picaretas.
